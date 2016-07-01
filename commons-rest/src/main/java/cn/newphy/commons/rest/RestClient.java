@@ -289,6 +289,7 @@ public class RestClient implements InitializingBean {
 			if (!(restRequestBase instanceof RestEnclosingRequestBase)) {
 				return null;
 			}
+			// XXX see org.apache.ibatis.reflection.MetaObject
 			RestEnclosingRequestBase<?> restEnclosingRequestBase = (RestEnclosingRequestBase<?>) restRequestBase;
 			MultiValueMap<String, ?> params = restEnclosingRequestBase.getBodyParams();
 			MultiValueMap<String, String> result = new LinkedMultiValueMap<>();
