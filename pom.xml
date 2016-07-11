@@ -1,16 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>cn.newphy</groupId>
 	<artifactId>newphy-commons</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
-	
+
 	<modules>
 		<module>commons-lang</module>
 		<module>commons-rest</module>
-		<module>commons-hibernate</module>
+		<module>commons-excel</module>
+		<module>commons-data</module>
 	</modules>
-	
+
 	<properties>
 		<newphy-commons.version>${project.version}</newphy-commons.version>
 
@@ -20,14 +22,15 @@
 		<hibernate.version>3.3.2.GA</hibernate.version>
 		<hibernate.annotations.version>3.4.0.GA</hibernate.annotations.version>
 		<mybatis.version>3.3.1</mybatis.version>
-		<mybatis-spring.version>1.2.5</mybatis-spring.version>		
+		<mybatis-spring.version>1.2.5</mybatis-spring.version>
 		<druid.version>1.0.14</druid.version>
 		<atomikos.version>3.9.3</atomikos.version>
 		<guava.version>15.0</guava.version>
 		<commons-lang3.version>3.2.1</commons-lang3.version>
 		<commons-io.version>1.3.2</commons-io.version>
 		<commons-beanutils.version>1.9.2</commons-beanutils.version>
-		
+		<commons-codec.version>1.10</commons-codec.version>
+
 		<javassist.version>3.12.1.GA</javassist.version>
 		<slf4j.version>1.7.5</slf4j.version>
 		<mysql.version>5.1.13</mysql.version>
@@ -36,7 +39,7 @@
 		<jackson.version>2.6.1</jackson.version>
 		<httpclient.version>4.4.1</httpclient.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>	
+	</properties>
 
 	<dependencyManagement>
 		<dependencies>
@@ -44,8 +47,14 @@
 				<groupId>cn.newphy</groupId>
 				<artifactId>commons-lang</artifactId>
 				<version>${newphy-commons.version}</version>
-			</dependency>		
-		
+			</dependency>
+			
+			<dependency>
+				<groupId>cn.newphy</groupId>
+				<artifactId>commons-data-base</artifactId>
+				<version>${newphy-commons.version}</version>
+			</dependency>			
+
 			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-core</artifactId>
@@ -111,7 +120,7 @@
 				<artifactId>spring-oxm</artifactId>
 				<version>${spring.version}</version>
 			</dependency>
-			
+
 			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-jms</artifactId>
@@ -130,18 +139,18 @@
 				<version>${hibernate.annotations.version}</version>
 			</dependency>
 
-	        <!-- orm -->
-	         <dependency>
-		      <groupId>org.mybatis</groupId>
-		      <artifactId>mybatis</artifactId>
-		      <version>${mybatis.version}</version>
-		    </dependency>
-	        
-	        <dependency>
-	            <groupId>org.mybatis</groupId>
-	            <artifactId>mybatis-spring</artifactId>
-	            <version>${mybatis-spring.version}</version>
-	        </dependency>
+			<!-- orm -->
+			<dependency>
+				<groupId>org.mybatis</groupId>
+				<artifactId>mybatis</artifactId>
+				<version>${mybatis.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.mybatis</groupId>
+				<artifactId>mybatis-spring</artifactId>
+				<version>${mybatis-spring.version}</version>
+			</dependency>
 
 			<!-- druid 数据库连接池 -->
 			<dependency>
@@ -149,28 +158,28 @@
 				<artifactId>druid</artifactId>
 				<version>${druid.version}</version>
 			</dependency>
-			
+
 			<!-- atomikos -->
 			<dependency>
-			    <groupId>com.atomikos</groupId>
-			    <artifactId>transactions-jta</artifactId>
-			    <version>${atomikos.version}</version>
+				<groupId>com.atomikos</groupId>
+				<artifactId>transactions-jta</artifactId>
+				<version>${atomikos.version}</version>
 			</dependency>
 			<dependency>
-			    <groupId>com.atomikos</groupId>
-			    <artifactId>atomikos-util</artifactId>
-			    <version>${atomikos.version}</version>
+				<groupId>com.atomikos</groupId>
+				<artifactId>atomikos-util</artifactId>
+				<version>${atomikos.version}</version>
 			</dependency>
 			<dependency>
-			    <groupId>com.atomikos</groupId>
-			    <artifactId>transactions-jms</artifactId>
-			    <version>${atomikos.version}</version>
+				<groupId>com.atomikos</groupId>
+				<artifactId>transactions-jms</artifactId>
+				<version>${atomikos.version}</version>
 			</dependency>
 			<dependency>
-			    <groupId>com.atomikos</groupId>
-			    <artifactId>transactions-jdbc</artifactId>
-			    <version>${atomikos.version}</version>
-			</dependency>			
+				<groupId>com.atomikos</groupId>
+				<artifactId>transactions-jdbc</artifactId>
+				<version>${atomikos.version}</version>
+			</dependency>
 
 			<!-- http client -->
 			<dependency>
@@ -320,10 +329,16 @@
 				<artifactId>commons-beanutils</artifactId>
 				<version>${commons-beanutils.version}</version>
 			</dependency>
+			<!-- https://mvnrepository.com/artifact/commons-codec/commons-codec -->
 			<dependency>
-			    <groupId>org.apache.commons</groupId>
-			    <artifactId>commons-collections4</artifactId>
-			    <version>4.1</version>
+			    <groupId>commons-codec</groupId>
+			    <artifactId>commons-codec</artifactId>
+			    <version>${commons-codec.version}</version>
+			</dependency>			
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-collections4</artifactId>
+				<version>4.1</version>
 			</dependency>
 			<!-- 文件上传jar包 -->
 			<dependency>
@@ -418,7 +433,7 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-	
+
 
 	<build>
 		<plugins>
