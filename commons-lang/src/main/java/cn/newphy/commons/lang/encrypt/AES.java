@@ -1,6 +1,7 @@
 package cn.newphy.commons.lang.encrypt;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
 
 import javax.crypto.BadPaddingException;
@@ -21,19 +22,16 @@ import org.springframework.util.Assert;
 public class AES {
 	public static Log logger = LogFactory.getLog(AES.class);
 
-	private static Cipher init(int mode, byte[] keyData) {
-		try {
-			KeyGenerator kgen = KeyGenerator.getInstance("AES");
-			kgen.init(128, new SecureRandom(keyData));
-			SecretKey secretKey = kgen.generateKey();
-			byte[] enCodeFormat = secretKey.getEncoded();
-			SecretKeySpec key = new SecretKeySpec(enCodeFormat, "AES");
-			Cipher cipher = Cipher.getInstance("AES");// 创建密码器
-			cipher.init(mode, key);// 初始化
-			return cipher;
-		} catch (Exception e) {
-			throw new IllegalStateException("init encrypt cipher error", e);
-		}
+	private static Cipher init(int mode, byte[] keyData) throws GeneralSecurityException {
+			KeyGenerator kgen;
+            kgen = KeyGenerator.getInstance("AES");
+            kgen.init(128, new SecureRandom(keyData));
+            SecretKey secretKey = kgen.generateKey();
+            byte[] enCodeFormat = secretKey.getEncoded();
+            SecretKeySpec key = new SecretKeySpec(enCodeFormat, "AES");
+            Cipher cipher = Cipher.getInstance("AES");// 创建密码器
+            cipher.init(mode, key);// 初始化
+            return cipher;
 	}
 
 	/**
@@ -44,16 +42,14 @@ public class AES {
 	 * @param key
 	 *            加密密码
 	 * @return
+	 * @throws BadPaddingException 
+	 * @throws IllegalBlockSizeException 
 	 */
-	public static byte[] encrypt(byte[] data, String key) {
+	public static byte[] encrypt(String key, byte[] data) throws GeneralSecurityException {
 		Assert.isTrue((data != null && data.length > 0), "data cannot be empty");
-		try {
-			Cipher cipher = init(Cipher.ENCRYPT_MODE, key.getBytes("UTF-8"));
-			byte[] encryptData = cipher.doFinal(data);
-			return encryptData;
-		} catch (UnsupportedEncodingException | IllegalBlockSizeException | BadPaddingException e) {
-			throw new IllegalStateException("AES encrypt error", e);
-		}
+		Cipher cipher = init(Cipher.ENCRYPT_MODE, key.getBytes(getCharset()));
+		byte[] encryptData = cipher.doFinal(data);
+		return encryptData;
 	}
 
 	/**
@@ -62,14 +58,12 @@ public class AES {
 	 * @param content
 	 * @param key
 	 * @return
+	 * @throws BadPaddingException 
+	 * @throws IllegalBlockSizeException 
 	 */
-	public static byte[] encryptStr(String content, String key) {
+	public static byte[] encryptStr(String key, String content) throws GeneralSecurityException {
 		Assert.isTrue(StringUtils.isNotEmpty(content), "content cannot be empty");
-		try {
-			return encrypt(content.getBytes("UTF-8"), key);
-		} catch (UnsupportedEncodingException e) {
-			throw new IllegalStateException("AES encrypt error", e);
-		}
+		return encrypt(key, content.getBytes(getCharset()));
 	}
 	
 	/**
@@ -77,9 +71,11 @@ public class AES {
 	 * @param content
 	 * @param key
 	 * @return
+	 * @throws BadPaddingException 
+	 * @throws IllegalBlockSizeException 
 	 */
-	public static String encryptBase64(String content, String key) {
-		byte[] encryptData = encryptStr(content, key);
+	public static String encryptBase64(String key, String content) throws GeneralSecurityException {
+		byte[] encryptData = encryptStr(key, content);
 		return Base64.encodeBase64String(encryptData);
 	}
 
@@ -91,19 +87,14 @@ public class AES {
 	 * @param key
 	 *            解密密钥
 	 * @return
+	 * @throws BadPaddingException 
+	 * @throws IllegalBlockSizeException 
 	 */
-	public static byte[] decrypt(byte[] encryptData, String key) {
+	public static byte[] decrypt(String key, byte[] encryptData) throws GeneralSecurityException {
 		Assert.isTrue(ArrayUtils.isNotEmpty(encryptData), "encryptData cannot be empty");
-		try {
-			Cipher cipher = init(Cipher.DECRYPT_MODE, key.getBytes("UTF-8"));
-			byte[] data = cipher.doFinal(encryptData);
-			return data;
-		} catch (UnsupportedEncodingException e) {
-			logger.error("unsupported encoding type", e);
-			return null;
-		} catch (IllegalBlockSizeException | BadPaddingException e) {
-			throw new IllegalStateException("AES decrypt error", e);
-		}
+		Cipher cipher = init(Cipher.DECRYPT_MODE, key.getBytes(getCharset()));
+		byte[] data = cipher.doFinal(encryptData);
+		return data;
 	}
 	
 	/**
@@ -111,14 +102,12 @@ public class AES {
 	 * @param encryptData
 	 * @param key
 	 * @return
+	 * @throws BadPaddingException 
+	 * @throws IllegalBlockSizeException 
 	 */
-	public static String decryptStr(byte[] encryptData, String key) {
-		try {
-			byte[] data = decrypt(encryptData, key);
-			return new String(data, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new IllegalStateException("AES decrypt error", e);
-		}
+	public static String decryptStr(String key, byte[] encryptData) throws GeneralSecurityException {
+		byte[] data = decrypt(key, encryptData);
+		return new String(data, getCharset());
 	}
 	
 	/**
@@ -126,19 +115,35 @@ public class AES {
 	 * @param base64Str
 	 * @param key
 	 * @return
+	 * @throws BadPaddingException 
+	 * @throws IllegalBlockSizeException 
 	 */
-	public static String decryptBase64(String base64Str, String key) {
+	public static String decryptBase64(String key, String base64Str) throws GeneralSecurityException {
 		byte[] encryptData = Base64.decodeBase64(base64Str);
-		return decryptStr(encryptData, key);
+		return decryptStr(key, encryptData);
 	}
-
+	
+	private static Charset getCharset() {
+	    return Charset.forName("UTF-8");
+	}
+	
 	public static void main(String[] args) {
-		String content = "abcd我什么的谁";
-		String password = RandomStringUtils.randomAlphanumeric(32);
-		System.out.println("content=" + content + "; password=" + password);
-		String encryptBase64Str = AES.encryptBase64(content, password);
-		System.out.println("encrypt after: " + encryptBase64Str);
-		String data = AES.decryptBase64(encryptBase64Str, password);
-		System.out.println(data);
-	}
+        try {
+            String secretKey = RandomStringUtils.randomAlphanumeric(8);
+            String content = "换";
+            System.out.println("content length: " + content.length());
+            long start = System.currentTimeMillis();
+            String encrypt = null, decrypt = null;
+            // private encrypt public decrypt
+            System.out.println("====== private encrypt public decrypt");
+            encrypt = AES.encryptBase64(secretKey, content);
+            decrypt = AES.decryptBase64(secretKey, encrypt);
+           
+            System.out.println("it take " + (System.currentTimeMillis() - start) + " ms");
+            System.out.println("encrypt: " + encrypt);
+            System.out.println("decrypt: " + decrypt);            
+        } catch (GeneralSecurityException e) {
+           e.printStackTrace();
+        }
+    }
 }
