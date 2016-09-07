@@ -14,6 +14,9 @@ public class ConfigurationHelper {
 
 	private Configuration configuration;
 	
+	// 表名前缀
+	private String tableNamePrefix = "";
+	
 	private static ListValuedMap<Class<?>, ResultMap> resultMaps = new ArrayListValuedHashMap<Class<?>, ResultMap>();
 	
 	
@@ -48,4 +51,20 @@ public class ConfigurationHelper {
 		List<ResultMap> list = getResultMapsByType(type);
 		return CollectionUtils.isEmpty(list) ? null : list.get(0);
 	}
+
+	/**
+	 * @return the tableNamePrefix
+	 */
+	public String getTableNamePrefix() {
+		return tableNamePrefix;
+	}
+
+	/**
+	 * @param tableNamePrefix the tableNamePrefix to set
+	 */
+	public void setTableNamePrefix(String tableNamePrefix) {
+		this.tableNamePrefix = tableNamePrefix;
+	}
+	
+	
 }

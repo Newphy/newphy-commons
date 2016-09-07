@@ -11,7 +11,8 @@
 		<module>commons-rest</module>
 		<module>commons-excel</module>
 		<module>commons-data</module>
-	</modules>
+    <module>commons-consistency</module>
+  </modules>
 
 	<properties>
 		<newphy-commons.version>${project.version}</newphy-commons.version>

@@ -24,7 +24,8 @@
 		<dependency>
 			<groupId>cn.newphy</groupId>
 			<artifactId>commons-lang</artifactId>
-		</dependency>		
+		</dependency>
+				
 		<!-- Spring -->
 		<dependency>
 			<groupId>org.springframework</groupId>

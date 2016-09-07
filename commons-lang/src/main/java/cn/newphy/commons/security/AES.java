@@ -1,4 +1,4 @@
-package cn.newphy.commons.lang.encrypt;
+package cn.newphy.commons.security;
 
 import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
@@ -13,7 +13,6 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -25,7 +24,10 @@ public class AES {
 	private static Cipher init(int mode, byte[] keyData) throws GeneralSecurityException {
 			KeyGenerator kgen;
             kgen = KeyGenerator.getInstance("AES");
-            kgen.init(128, new SecureRandom(keyData));
+            
+            SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG");
+            secureRandom.setSeed(keyData);
+            kgen.init(128, secureRandom);
             SecretKey secretKey = kgen.generateKey();
             byte[] enCodeFormat = secretKey.getEncoded();
             SecretKeySpec key = new SecretKeySpec(enCodeFormat, "AES");
@@ -129,19 +131,12 @@ public class AES {
 	
 	public static void main(String[] args) {
         try {
-            String secretKey = RandomStringUtils.randomAlphanumeric(8);
-            String content = "换";
-            System.out.println("content length: " + content.length());
-            long start = System.currentTimeMillis();
-            String encrypt = null, decrypt = null;
-            // private encrypt public decrypt
-            System.out.println("====== private encrypt public decrypt");
-            encrypt = AES.encryptBase64(secretKey, content);
-            decrypt = AES.decryptBase64(secretKey, encrypt);
-           
-            System.out.println("it take " + (System.currentTimeMillis() - start) + " ms");
-            System.out.println("encrypt: " + encrypt);
-            System.out.println("decrypt: " + decrypt);            
+            String secretKey = "zyORPzofKycktOc1";
+            String data = "{\"bizCode\":\"CUSTOMER_BASE_INFO\",\"data\":{\"num\":\"13813813888\",\"numtype\":1},\"from\":\"CRM\",\"reqId\":\"5aa032cd-ffda-47cd-8623-07b8a8e882a3\",\"timestamp\":1470997918432,\"to\":\"XNZX\",\"user\":\"CRM\"}\"";
+            String securityData = AES.encryptBase64(secretKey, data);
+            System.out.println("securityData: " + securityData);
+            // ssxrtMArDvDRRV1zpsyHtPKk5FQNcmUtfvl8pGhU7GUwb7XRk9J2lkzO3wOVWzrnYAziMvQ1OJhrMjZwSKgWmHQnJTwWCGwl6eL+/SVmdkiryhs88L6jUHGd2Efp335O0S5e2RJMbcBUz31MnD/RwzjO8C9cyKfiaVIwzMUs2kyA2hErL1BG+bJ+zthjL7wuwlcn/T03X1X6whMPoP3KSrQKG5ksgsVSKRSBnOwYIYcHV3YLUKQ2phPGUrZhEudY
+            System.out.println(new String(AES.decrypt(secretKey, Base64.decodeBase64(securityData))));
         } catch (GeneralSecurityException e) {
            e.printStackTrace();
         }

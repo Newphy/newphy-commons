@@ -1,5 +1,11 @@
 package cn.newphy.data.mybatis.util;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
+import org.apache.commons.io.FileUtils;
+
 public class CamelCaseUtils {
 
 	private static final char SEPARATOR = '_';
@@ -63,11 +69,21 @@ public class CamelCaseUtils {
 	}
 
 	public static void main(String[] args) {
-		System.out.println(CamelCaseUtils.camelCase2Underline("ISOCertifiedStaff"));
-		System.out.println(CamelCaseUtils.camelCase2Underline("CertifiedStaff"));
-		System.out.println(CamelCaseUtils.camelCase2Underline("UserID"));
-		System.out.println(CamelCaseUtils.underline2CamelCase("iso_certified_staff"));
-		System.out.println(CamelCaseUtils.underline2CamelCase("certified_staff"));
-		System.out.println(CamelCaseUtils.underline2CamelCase("user_id"));
+		try {
+			String file = "D:/1.txt";
+			List<String> lines = FileUtils.readLines(new File(file));
+			for (String line : lines) {
+				System.out.println(CamelCaseUtils.underline2CamelCase(line));
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+//		System.out.println(CamelCaseUtils.camelCase2Underline("ISOCertifiedStaff"));
+//		System.out.println(CamelCaseUtils.camelCase2Underline("CertifiedStaff"));
+//		System.out.println(CamelCaseUtils.camelCase2Underline("UserID"));
+//		System.out.println(CamelCaseUtils.underline2CamelCase("iso_certified_staff"));
+//		System.out.println(CamelCaseUtils.underline2CamelCase("certified_staff"));
+//		System.out.println(CamelCaseUtils.underline2CamelCase("user_id"));
 	}
 }

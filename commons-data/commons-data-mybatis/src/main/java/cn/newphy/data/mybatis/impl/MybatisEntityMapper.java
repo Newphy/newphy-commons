@@ -4,6 +4,8 @@ package cn.newphy.data.mybatis.impl;
 
 import java.beans.PropertyDescriptor;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -34,13 +36,9 @@ public class MybatisEntityMapper<T> implements EntityMapper<T> {
 		this.entityClass = ReflectionUtils.getSuperClassGenericType(getClass());
 		this.resultMap = configuration.getResultMap(resultMapId);
 		this.resultMappings = filterMappingProperty(entityClass, resultMap);
-		this.tableName = resovleTableName(entityClass);
+		this.tableName = resolveTableName(entityClass);
 	}
 	
-	public MybatisEntityMapper(Configuration configuration) {
-		this.entityClass = ReflectionUtils.getSuperClassGenericType(getClass());
-		this.resultMap = null;
-	}
 	
 	private List<ResultMapping> filterMappingProperty(Class<?> entityClass, ResultMap resultMap) {
 		Set<String> propertyNames = new HashSet<String>();
@@ -65,13 +63,24 @@ public class MybatisEntityMapper<T> implements EntityMapper<T> {
 			tableName = table.name();
 			return tableName;
 		}
-		if(entityClass.isAnnotationPresent(javax.persistence.Table.class)) {
-			javax.persistence.Table table = entityClass.getAnnotation(javax.persistence.Table.class);
-			tableName = table.name();
-			return tableName;
+		
+		Class<? extends Annotation> tableClass;
+		try {
+			tableClass = (Class<? extends Annotation>)Class.forName("javax.persistence.Table");
+			if(entityClass.isAnnotationPresent(tableClass)) {
+				Object tableAnnotation = entityClass.getAnnotation(tableClass);
+				Method method = tableClass.getMethod("name");
+				tableName = (String)org.springframework.util.ReflectionUtils.invokeMethod(method, tableAnnotation);
+				return tableName;
+			}
+		} catch (Exception e) {
 		}
-		String className = entityClass.getSimpleName();
-		return CamelCaseUtils.camelCase2Underline(className);
+		
+		if(tableName == null) {
+			String className = entityClass.getSimpleName();
+			tableName = CamelCaseUtils.camelCase2Underline(className);			
+		}
+		return tableName;
 	}
 
 	@Override

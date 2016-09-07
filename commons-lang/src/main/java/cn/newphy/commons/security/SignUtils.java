@@ -1,6 +1,7 @@
-package cn.newphy.commons.lang.encrypt;
+package cn.newphy.commons.security;
 
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
@@ -59,7 +60,6 @@ public class SignUtils {
         return doVerifySign(publicKey, sign, getDigestContent(bean, ignoredProperties));
     }
     
-
     /**
      * 对Map进行RSA验证签名
      * @param publicKey
@@ -79,12 +79,11 @@ public class SignUtils {
      * @return
      * @throws Exception
      */
-    public static String digest(String secretKey, Object bean,  String... ignoredProperties)  {
+    public static String digest(String secretKey, Object bean, String... ignoredProperties) {
         String digestData = getDigestContent(bean, ignoredProperties);
         return doDigest(secretKey, digestData);
     }
     
-
     /**
      * 对Map生成摘要
      * @param secretKey
@@ -104,11 +103,10 @@ public class SignUtils {
      * @return
      * @throws Exception
      */
-    public static boolean verifyDigest(String secretKey, String digest, Object bean, String... ignoredProperties)  {
+    public static boolean verifyDigest(String secretKey, String digest, Object bean, String... ignoredProperties) {
         return doVerifyDigest(secretKey, digest, getDigestContent(bean, ignoredProperties));
     }
     
-
     /**
      * 对map进行验证摘要
      * @param secretKey
@@ -124,22 +122,22 @@ public class SignUtils {
         if (signData == null || signData.length() == 0) {
             return "";
         }
-        return RSA.signWithSHA256(privateKey, signData.getBytes(utf8));
+        return RSA.signWithMD5(privateKey, signData.getBytes(utf8));
     }
     
     private static boolean doVerifySign(String publicKey, String sign, String signData) throws GeneralSecurityException {
         if (sign == null || signData == null) {
             return false;
         }
-        return RSA.verifyWithSHA256(publicKey, signData.getBytes(utf8), sign);
+        return RSA.verifyWithMD5(publicKey, signData.getBytes(utf8), sign);
     }
     
     private static String doDigest(String secretKey, String digestData) {
         if (digestData == null || digestData.length() == 0) {
             return "";
         }
-        digestData += "&" + secretKey;
-        return DigestUtils.sha256Hex(digestData.getBytes(utf8));
+        digestData += "&secretKey=" + secretKey;
+        return DigestUtils.md5Hex(digestData.getBytes(utf8));
     }
     
     private static boolean doVerifyDigest(String secretKey, String digest, String digestData) {
@@ -165,19 +163,19 @@ public class SignUtils {
         return join(treeMap);
     }
     
-    private static TreeMap<String, String> bean2TreeMap(Object bean, String... ignoredProperties)  {
+    private static TreeMap<String, String> bean2TreeMap(Object bean, String... ignoredProperties) {
         Set<String> ignoredSet = new HashSet<String>();
         ignoredSet.add("class");
-        if(ignoredProperties != null) {
+        if (ignoredProperties != null) {
             ignoredSet.addAll(Arrays.asList(ignoredProperties));
         }
-
+        
         try {
             TreeMap<String, String> treeMap = new TreeMap<String, String>();
             PropertyDescriptor[] descriptors = PropertyUtils.getPropertyDescriptors(bean);
             for (PropertyDescriptor propertyDescriptor : descriptors) {
                 String propertyName = propertyDescriptor.getName();
-                if(ignoredSet.contains(propertyName)) {
+                if (ignoredSet.contains(propertyName)) {
                     continue;
                 }
                 Object value = PropertyUtils.getNestedProperty(bean, propertyName);
