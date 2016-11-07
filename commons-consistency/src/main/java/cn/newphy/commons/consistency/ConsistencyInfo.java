@@ -4,48 +4,57 @@ import java.io.Serializable;
 import java.util.Date;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
-import cn.newphy.commons.consistency.util.UUID;
+import cn.newphy.commons.consistency.support.UniqueId;
 
 public class ConsistencyInfo implements Serializable {
 	private static final long serialVersionUID = -1160875210173788524L;
-	
+
 	// 编号
 	private long id;
-	// 事物编号
+	// 全局事务编号
 	private String txId;
-	// 生成时间
-	private Date createTime;
+	// 业务编号
+	private String bizId;
 	// 确认级别(1:发送/2:执行)
 	private ConfirmLevel confirmLevel;
 	// 确认状态(0:新建/1:发送确认/2:执行确认)
 	private ConfirmStatus confirmStatus;
 	// 同步时间
-	private Date syncTime;
-	// 确认时间间隔(秒)
-	private int retryInterval;
-	// 重新同步时间
-	private Date retryTime;
-	// 重试状态(0:不需要/1:需要)
-	private RetryStatus retryStatus;
-	// 发送确认时间
-	private Date sentTime;
-	// 执行确认时间
-	private Date executeTime;
+	private Date firstSentTime;
 	// 消息目标
 	private String destination;
 	// 消息内容
 	private String content;
+	// 确认时间间隔(秒)
+	private int retryInterval;
+	// 重新同步时间
+	private Date retryTime;
+	// 重试次数
+	private int retryCount;
+	// 重试状态(0:不需要/1:需要)
+	private RetryStatus retryStatus;
+	// 发送确认时间
+	private Date confirmSentTime;
+	// 执行确认时间
+	private Date confirmExecuteTime;
+	// 执行服务器信息
+	private String executeHost;
+	// 确认目标地址
+	private String confirmDestination;
 	// 失败原因
 	private String failCause;
-	
+	// 生成时间
+	private Date createTime;
+
 	public ConsistencyInfo() {
-		this.txId = UUID.generate();
+		this.txId = UniqueId.get().toHexString();
 	}
 
 	@Override
 	public String toString() {
-		return ToStringBuilder.reflectionToString(this);
+		return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
 	}
 
 	/**
@@ -76,6 +85,21 @@ public class ConsistencyInfo implements Serializable {
 	 */
 	public void setTxId(String txId) {
 		this.txId = txId;
+	}
+
+	/**
+	 * @return the bizId
+	 */
+	public String getBizId() {
+		return bizId;
+	}
+
+	/**
+	 * @param bizId
+	 *            the bizId to set
+	 */
+	public void setBizId(String bizId) {
+		this.bizId = bizId;
 	}
 
 	/**
@@ -124,18 +148,18 @@ public class ConsistencyInfo implements Serializable {
 	}
 
 	/**
-	 * @return the syncTime
+	 * @return the firstSentTime
 	 */
-	public Date getSyncTime() {
-		return syncTime;
+	public Date getFirstSentTime() {
+		return firstSentTime;
 	}
 
 	/**
-	 * @param syncTime
-	 *            the syncTime to set
+	 * @param firstSentTime
+	 *            the firstSentTime to set
 	 */
-	public void setSyncTime(Date syncTime) {
-		this.syncTime = syncTime;
+	public void setFirstSentTime(Date firstSentTime) {
+		this.firstSentTime = firstSentTime;
 	}
 
 	/**
@@ -184,33 +208,78 @@ public class ConsistencyInfo implements Serializable {
 	}
 
 	/**
-	 * @return the sentTime
+	 * @return the retryCount
 	 */
-	public Date getSentTime() {
-		return sentTime;
+	public int getRetryCount() {
+		return retryCount;
 	}
 
 	/**
-	 * @param sentTime
-	 *            the sentTime to set
+	 * @param retryCount
+	 *            the retryCount to set
 	 */
-	public void setSentTime(Date sentTime) {
-		this.sentTime = sentTime;
+	public void setRetryCount(int retryCount) {
+		this.retryCount = retryCount;
 	}
 
 	/**
-	 * @return the executeTime
+	 * @return the confirmSentTime
 	 */
-	public Date getExecuteTime() {
-		return executeTime;
+	public Date getConfirmSentTime() {
+		return confirmSentTime;
 	}
 
 	/**
-	 * @param executeTime
-	 *            the executeTime to set
+	 * @param confirmSentTime
+	 *            the confirmSentTime to set
 	 */
-	public void setExecuteTime(Date executeTime) {
-		this.executeTime = executeTime;
+	public void setConfirmSentTime(Date confirmSentTime) {
+		this.confirmSentTime = confirmSentTime;
+	}
+
+	/**
+	 * @return the confirmExecuteTime
+	 */
+	public Date getConfirmExecuteTime() {
+		return confirmExecuteTime;
+	}
+
+	/**
+	 * @param confirmExecuteTime
+	 *            the confirmExecuteTime to set
+	 */
+	public void setConfirmExecuteTime(Date confirmExecuteTime) {
+		this.confirmExecuteTime = confirmExecuteTime;
+	}
+
+	/**
+	 * @return the confirmDestination
+	 */
+	public String getConfirmDestination() {
+		return confirmDestination;
+	}
+
+	/**
+	 * @param confirmDestination
+	 *            the confirmDestination to set
+	 */
+	public void setConfirmDestination(String confirmDestination) {
+		this.confirmDestination = confirmDestination;
+	}
+
+	/**
+	 * @return the executeHost
+	 */
+	public String getExecuteHost() {
+		return executeHost;
+	}
+
+	/**
+	 * @param executeHost
+	 *            the executeHost to set
+	 */
+	public void setExecuteHost(String executeHost) {
+		this.executeHost = executeHost;
 	}
 
 	/**

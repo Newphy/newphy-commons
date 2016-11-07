@@ -1,6 +1,5 @@
 package cn.newphy.data.id.snowflake;
 
-
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.BeansException;
@@ -10,47 +9,49 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.StringUtils;
 
 public class SnowFlakeIdFactory implements InitializingBean, ApplicationContextAware {
-	private static final int MAX_SIZE = 5;//(int)SnowFlakeId.maxWorkerId;
+	private static final int MAX_SIZE = (int) SnowFlakeId.maxWorkerId;
 	private static final int CONNECT_TIME_OUT = 10000;
 	private static ApplicationContext applicationContext;
-	
+
 	/**
 	 * 获得SnowFlakeId实例
+	 * 
 	 * @return
 	 */
 	public static SnowFlakeId getSnowFlakeId(String moduleName) {
 		SnowFlakeIdFactory snowFlakeIdFactory = applicationContext.getBean(SnowFlakeIdFactory.class);
 		return snowFlakeIdFactory.createSnowFlakeId(moduleName);
 	}
-	
+
 	private ConcurrentHashMap<String, SnowFlakeId> snowFlakeIdMap = new ConcurrentHashMap<>();
-	
+
 	public enum RegistryType {
 		ZK, REDIS;
 	}
+
 	// workerId注册器
 	private WorkerIdRegistry workerIdRegistry;
 	// 模块名称
 	private String defaultModuleName = "default";
 	// 数据中心编号
-	private int dateCenter = 0;
+	private int dataCenter = 0;
 	// 注册类型
-	private RegistryType reigistryType = RegistryType.ZK;
+	private RegistryType registryType = RegistryType.ZK;
 	// 注册服务器
 	private String registryHosts;
 
 	public SnowFlakeId createSnowFlakeId() {
 		return createSnowFlakeId(this.defaultModuleName);
 	}
-	
+
 	public SnowFlakeId createSnowFlakeId(String moduleName) {
-		if(moduleName == null) {
+		if (moduleName == null) {
 			moduleName = this.defaultModuleName;
 		}
-		if(!snowFlakeIdMap.contains(moduleName)) {
+		if (!snowFlakeIdMap.contains(moduleName)) {
 			synchronized (this) {
-				if(!snowFlakeIdMap.contains(moduleName)) {
-					WorkerId workerId = workerIdRegistry.register(dateCenter, moduleName);
+				if (!snowFlakeIdMap.contains(moduleName)) {
+					WorkerId workerId = workerIdRegistry.register(dataCenter, moduleName);
 					SnowFlakeId snowFlakeId = workerId.getSnowFlakeId();
 					snowFlakeIdMap.putIfAbsent(moduleName, snowFlakeId);
 				}
@@ -61,9 +62,9 @@ public class SnowFlakeIdFactory implements InitializingBean, ApplicationContextA
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		switch(reigistryType) {
+		switch (registryType) {
 		case ZK: {
-			if(!StringUtils.hasText(registryHosts)) {
+			if (!StringUtils.hasText(registryHosts)) {
 				throw new IllegalArgumentException("ZooKeeper注册服务器地址为空");
 			}
 			this.workerIdRegistry = new WorkerIdZookeeperRegistry(registryHosts, CONNECT_TIME_OUT, MAX_SIZE);
@@ -77,11 +78,10 @@ public class SnowFlakeIdFactory implements InitializingBean, ApplicationContextA
 		}
 		}
 	}
-	
 
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		SnowFlakeIdFactory.applicationContext = applicationContext;		
+		SnowFlakeIdFactory.applicationContext = applicationContext;
 	}
 
 	/**
@@ -92,43 +92,42 @@ public class SnowFlakeIdFactory implements InitializingBean, ApplicationContextA
 	}
 
 	/**
-	 * @param defaultModuleName the defaultModuleName to set
+	 * @param defaultModuleName
+	 *            the defaultModuleName to set
 	 */
 	public void setDefaultModuleName(String defaultModuleName) {
 		this.defaultModuleName = defaultModuleName;
 	}
 
 	/**
-	 * @return the dateCenter
+	 * @return the dataCenter
 	 */
-	public int getDateCenter() {
-		return dateCenter;
+	public int getDataCenter() {
+		return dataCenter;
 	}
-
 
 	/**
-	 * @param dateCenter the dateCenter to set
+	 * @param dataCenter
+	 *            the dataCenter to set
 	 */
-	public void setDateCenter(int dateCenter) {
-		this.dateCenter = dateCenter;
+	public void setDataCenter(int dataCenter) {
+		this.dataCenter = dataCenter;
 	}
-
 
 	/**
-	 * @return the reigistryType
+	 * @return the registryType
 	 */
-	public RegistryType getReigistryType() {
-		return reigistryType;
+	public RegistryType getRegistryType() {
+		return registryType;
 	}
-
 
 	/**
-	 * @param reigistryType the reigistryType to set
+	 * @param registryType
+	 *            the registryType to set
 	 */
-	public void setReigistryType(RegistryType reigistryType) {
-		this.reigistryType = reigistryType;
+	public void setRegistryType(RegistryType registryType) {
+		this.registryType = registryType;
 	}
-
 
 	/**
 	 * @return the registryHosts
@@ -137,19 +136,12 @@ public class SnowFlakeIdFactory implements InitializingBean, ApplicationContextA
 		return registryHosts;
 	}
 
-
 	/**
-	 * @param registryHosts the registryHosts to set
+	 * @param registryHosts
+	 *            the registryHosts to set
 	 */
 	public void setRegistryHosts(String registryHosts) {
 		this.registryHosts = registryHosts;
 	}
-	
-	
-	
-	
-	
-	
 
-	
 }

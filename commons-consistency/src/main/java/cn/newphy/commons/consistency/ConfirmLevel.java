@@ -1,34 +1,26 @@
 package cn.newphy.commons.consistency;
 
-import cn.newphy.commons.consistency.util.IEnum;
-
-public enum ConfirmLevel implements IEnum {
-	DEFAULT(0, "缺省"),
-	SENT(1, "发送保证一致性"), 
-	EXECUTED(2, "最终执行保证一致性");
-
-	private int level;
-	private String description;
-
-	private ConfirmLevel(int level, String description) {
-		this.level = level;
-		this.description = description;
-	}
-
+/**
+ * 确认级别
+ * 
+ * @author liuhui18
+ * @time 2016年10月31日
+ * @Copyright (c) 深圳市牛鼎丰科技有限公司-版权所有.
+ */
+public enum ConfirmLevel  {
 	/**
-	 * @return the level
+	 * 缺省状态，默认为SENT级别
 	 */
-	public int getValue() {
-		return level;
-	}
-
-	/**
-	 * @return the description
-	 */
-	public String getDescription() {
-		return description;
-	}
-
+	DEFAULT,
 	
+	/**
+	 * 保证发送成功
+	 */
+	SENT,
+	
+	/**
+	 * 保证执行成功
+	 */
+	EXECUTED;
 	
 }

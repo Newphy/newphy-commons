@@ -8,10 +8,6 @@ public interface ConsistencyInvokerRegistrar {
 	 * @param path
 	 * @param invoker
 	 */
-	void registerInvoker(String path, ConsistencyInvoker invoker);
-	
-	/**
-	 * 启动
-	 */
-	void start();
+	<T> void registerInvoker(String destination, ConsistencyInvoker<T> invoker);
+
 }

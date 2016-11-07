@@ -7,15 +7,15 @@ import java.lang.reflect.Proxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.util.StringUtils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.alibaba.fastjson.JSON;
 
 import cn.newphy.commons.consistency.ConfirmLevel;
-import cn.newphy.commons.consistency.ConsistencyHandler;
+import cn.newphy.commons.consistency.ConsistencyConst;
 import cn.newphy.commons.consistency.ConsistencyInfo;
-import cn.newphy.commons.consistency.ConsistencyMessage;
-import cn.newphy.commons.consistency.util.JsonHelper;
-import cn.newphy.commons.consistency.util.PathUtils;
+import cn.newphy.commons.consistency.handler.ConsistencyHandler;
+import cn.newphy.commons.consistency.support.IDFetcher;
 
 public class ConsistencyApiFactoryBean<T> implements FactoryBean<T> {
 	private Logger logger = LoggerFactory.getLogger(ConsistencyApiFactoryBean.class);
@@ -24,8 +24,6 @@ public class ConsistencyApiFactoryBean<T> implements FactoryBean<T> {
 	private Class<T> consistencyInterface;
 
 	private ConsistencyHandler consistencyHandler;
-
-	private JsonHelper jsonHelper = JsonHelper.getWithType();
 
 	public ConsistencyApiFactoryBean() {
 	}
@@ -54,55 +52,42 @@ public class ConsistencyApiFactoryBean<T> implements FactoryBean<T> {
 				});
 	}
 
-	private Object invokeConsistency(Method method, Object[] args) throws JsonProcessingException {
-		ConsistencyInfo cinfo = getInterfaceConsistencyInfo();
-		ConsistencyApi consistencyApi = method.getAnnotation(ConsistencyApi.class);
-		if (consistencyApi == null) {
-			logger.warn("{}.{}() not present annotation ConsistentApi!", consistencyInterface.getCanonicalName(),
+	private Object invokeConsistency(Method method, Object[] args) {
+		Consistency consistency = method.getAnnotation(Consistency.class);
+		if (consistency == null) {
+			logger.warn("{}.{}() not present annotation ConsistencyMapping!", consistencyInterface.getName(),
 					method.getName());
 			return null;
 		}
-
-		initConsistencyInfo(cinfo, consistencyApi);
-		// 发送message
-		ConsistencyMessage message = new ConsistencyMessage();
-		message.setTxId(cinfo.getTxId());
-		message.setConfirmLevel(cinfo.getConfirmLevel().getValue());
-		for (int i = 0; i < args.length; i++) {
-			Object object = args[i];
-			message.addAttribute("args-" + i, object);
-		}
-		cinfo.setContent(jsonHelper.toJson(message));
-		consistencyHandler.send(cinfo);
+		ConsistencyInfo cinfo = getConsistencyInfo(consistency, method, args);
+		Invocation invocation = new Invocation(method, args);
+		cinfo.setContent(JSON.toJSONString(invocation));
+		consistencyHandler.handle(cinfo);
 		return null;
 	}
 
-	private ConsistencyInfo getInterfaceConsistencyInfo() {
-		ConsistencyApi consistencyApi = consistencyInterface.getAnnotation(ConsistencyApi.class);
+	private ConsistencyInfo getConsistencyInfo(Consistency consistency, Method method, Object[] args) {
 		ConsistencyInfo cinfo = new ConsistencyInfo();
-		cinfo.setConfirmLevel(consistencyApi.confirmLevel());
-		cinfo.setRetryInterval(consistencyApi.retryInterval());
-		cinfo.setDestination(PathUtils.regularPath(consistencyApi.path()));
-		return cinfo;
-	}
-
-	private void initConsistencyInfo(ConsistencyInfo cinfo, ConsistencyApi consistencyApi) {
-		if (consistencyApi.confirmLevel() != ConfirmLevel.DEFAULT) {
-			cinfo.setConfirmLevel(consistencyApi.confirmLevel());
-		}
+		cinfo.setConfirmLevel(consistency.confirmLevel());
 		if (cinfo.getConfirmLevel() == ConfirmLevel.DEFAULT) {
 			cinfo.setConfirmLevel(ConfirmLevel.SENT);
 		}
-
-		if (consistencyApi.retryInterval() != 0) {
-			cinfo.setRetryInterval(consistencyApi.retryInterval());
+		cinfo.setRetryInterval(consistency.retryInterval());
+		if (consistency.retryInterval() == 0) {
+			cinfo.setRetryInterval(ConsistencyConst.DEFAULT_RETRY_INTERVAL);
 		}
-		if (consistencyApi.retryInterval() == 0) {
-			cinfo.setRetryInterval(60);
+		String destination = consistency.value();
+		if(StringUtils.isEmpty(destination)) {
+			throw new IllegalArgumentException("ConsistencyMapping's value not allowed to be empty at "
+					+ method.getDeclaringClass().getName() + "." + method.getName() + "()");
 		}
-		String path = consistencyApi.path();
-		path = cinfo.getDestination() + PathUtils.regularPath(path);
-		cinfo.setDestination(PathUtils.getConsistencyPath(path));
+		cinfo.setDestination(destination);
+		
+		// 获取业务编号
+		if(args.length > 0) {
+			cinfo.setBizId(IDFetcher.getId(args[0]));
+		}
+		return cinfo;
 	}
 
 	/**

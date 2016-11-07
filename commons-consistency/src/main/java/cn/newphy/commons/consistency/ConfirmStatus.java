@@ -1,31 +1,25 @@
 package cn.newphy.commons.consistency;
 
-import cn.newphy.commons.consistency.util.IEnum;
-
-public enum ConfirmStatus implements IEnum {
-
-	NEW(0, "新建"), SENT(1, "发送成功"), EXECUTED(2, "执行成功");
-
-	private int status;
-	private String description;
-
-	private ConfirmStatus(int status, String description) {
-		this.status = status;
-		this.description = description;
-	}
+/**
+ * 确认状态
+ * @author liuhui18
+ * @time 2016年10月31日
+ * @Copyright (c) 深圳市牛鼎丰科技有限公司-版权所有.
+ */
+public enum ConfirmStatus {
 
 	/**
-	 * @return the level
+	 * 初始状态
 	 */
-	public int getValue() {
-		return status;
-	}
-
+	INTIAL,
+	
 	/**
-	 * @return the description
+	 * 发送成功
 	 */
-	public String getDescription() {
-		return description;
-	}
-
+	SENT, 
+	
+	/**
+	 * 执行成功
+	 */
+	EXECUTED;
 }

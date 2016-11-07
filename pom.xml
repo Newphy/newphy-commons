@@ -39,6 +39,7 @@
 		<poi.version>3.8</poi.version>
 		<junit.version>4.11</junit.version>
 		<jackson.version>2.6.1</jackson.version>
+        <fastjson.version>1.2.4</fastjson.version>
 		<httpclient.version>4.4.1</httpclient.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
@@ -313,7 +314,11 @@
 				<version>${jackson.version}</version>
 			</dependency>
 
-
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>fastjson</artifactId>
+                <version>${fastjson.version}</version>
+            </dependency>
 			<!-- JSON end -->
 
 			<!-- util -->

@@ -14,7 +14,7 @@ import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
-import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.util.StringUtils;
 
@@ -27,7 +27,7 @@ public class ConsistencyApiScanner extends ClassPathBeanDefinitionScanner {
 	}
 
 	public void registerFilters() {
-		addIncludeFilter(new AnnotationTypeFilter(ConsistencyApi.class));
+		addIncludeFilter(new AssignableTypeFilter(ConsistencyApi.class));
 		// exclude package-info.java
 		addExcludeFilter(new TypeFilter() {
 			@Override
@@ -57,7 +57,7 @@ public class ConsistencyApiScanner extends ClassPathBeanDefinitionScanner {
 		for (BeanDefinitionHolder holder : beanDefinitions) {
 			definition = (GenericBeanDefinition) holder.getBeanDefinition();
 			if (logger.isDebugEnabled()) {
-				logger.debug("Creating ConsistencyFactoryBean with name '" + holder.getBeanName() + "' and '"
+				logger.debug("Creating ConsistencyMappingFactoryBean with name '" + holder.getBeanName() + "' and '"
 						+ definition.getBeanClassName() + "' consistencyInterface");
 			}
 			definition.getConstructorArgumentValues().addGenericArgumentValue(definition.getBeanClassName()); // issue
