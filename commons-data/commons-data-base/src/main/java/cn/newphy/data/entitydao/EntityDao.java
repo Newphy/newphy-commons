@@ -1,93 +1,113 @@
-package cn.newphy.data.hibernate;
+package cn.newphy.data.entitydao;
 
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
-import cn.newphy.data.Page1;
-import cn.newphy.data.hibernate.query.EntityQuery;
+import cn.newphy.data.domain.Order;
+import cn.newphy.data.domain.Page;
+import cn.newphy.data.domain.Pageable;
+import cn.newphy.data.exception.OptimisticLockException;
 
 /**
  * Created by Administrator on 14-3-11.
  */
 public interface EntityDao<T> {
 
-	EntityQuery<T> query();
+	/**
+	 * 构建查询器
+	 * @return
+	 */
+	EntityQuery<T> createQuery();
+	
+	/**
+	 * 构建更新器
+	 * @return
+	 */
+	EntityUpdate<T> createUpdate();
 
 	/**
 	 * 保存实体
 	 * 
 	 * @param entity
 	 */
-	void save(T entity);
+	int save(T entity);
 
 	/**
 	 * 批量保存实体
 	 * 
 	 * @param entities
 	 */
-	void batchSave(Collection<T> entities);
+	int batchSave(Collection<T> entities);
 
 	/**
 	 * 批量保存实体
 	 * 
 	 * @param entities
 	 */
-	void batchSave(T[] entities);
+	int batchSave(T[] entities);
 
 	/**
 	 * 修改实体
 	 * 
 	 * @param entity
 	 */
-	void update(T entity);
+	int update(T entity);
+	
+	/**
+	 * 乐观更新
+	 * @param entity
+	 * @param versionProperty
+	 * @return
+	 */
+	int updateOptimistic(T entity) throws OptimisticLockException;
 
 	/**
 	 * 批量更新实体
 	 * 
 	 * @param entities
 	 */
-	void batchUpdate(Collection<T> entities);
+	int batchUpdate(Collection<T> entities);
 
 	/**
 	 * 批量更新实体
 	 * 
 	 * @param entities
 	 */
-	void batchUpdate(T[] entities);
+	int batchUpdate(T[] entities);
 
 	/**
 	 * 删除实体
 	 * 
 	 * @param entity
 	 */
-	void delete(T entity);
+	int delete(T entity);
 
 	/**
 	 * 删除所有实体
 	 */
-	void deleteAll();
+	int deleteAll();
 
 	/**
 	 * 批量删除实体
 	 * 
 	 * @param entities
 	 */
-	void batchDelete(Collection<T> entities);
+	int batchDelete(Collection<T> entities);
 
 	/**
 	 * 批量删除实体
 	 * 
 	 * @param entities
 	 */
-	void batchDelete(T[] entities);
+	int batchDelete(T[] entities);
 
 	/**
 	 * 删除实体
 	 * 
 	 * @param id
 	 */
-	void deleteById(Serializable id);
+	int deleteById(Serializable id);
 
 	/**
 	 * 获得实体
@@ -103,7 +123,23 @@ public interface EntityDao<T> {
 	 * @param orders
 	 * @return
 	 */
-	List<T> getAll(String... orders);
+	List<T> getAll(Order... orders);
+	
+	
+	/**
+	 * 根据模板获得列表
+	 * @param template
+	 * @param orders
+	 * @return
+	 */
+	List<T> getByTemplate(T template, Order...orders);
+	
+	/**
+	 * 获得任意一个
+	 * @param template
+	 * @return
+	 */
+	T getOneByTemplate(T template);
 
 	/**
 	 * 根据属性获得实体对象列表
@@ -113,7 +149,7 @@ public interface EntityDao<T> {
 	 * @param orders
 	 * @return
 	 */
-	List<T> getBy(String propName, Object value, String... orders);
+	List<T> getBy(String propName, Object value, Order... orders);
 
 	/**
 	 * 根据属性获得实体对象列表
@@ -123,7 +159,7 @@ public interface EntityDao<T> {
 	 * @param orders
 	 * @return
 	 */
-	List<T> getBy(String[] propNames, Object[] values, String... orders);
+	List<T> getBy(String[] propNames, Object[] values, Order... orders);
 	
 	
 	/**
@@ -133,7 +169,7 @@ public interface EntityDao<T> {
 	 * @param value
 	 * @return
 	 */
-	T getAnyBy(String propName, Object value);
+	T getOneBy(String propName, Object value);
 
 	/**
 	 * 根据属性获得实体对象
@@ -142,7 +178,7 @@ public interface EntityDao<T> {
 	 * @param values
 	 * @return
 	 */
-	T getAnyBy(String[] propNames, Object[] values);		
+	T getOneBy(String[] propNames, Object[] values);		
 
 	/**
 	 * 获得实体的分页列表
@@ -151,7 +187,17 @@ public interface EntityDao<T> {
 	 * @param orders
 	 * @return
 	 */
-	Page1<T> getPage(Page1<T> page, String... orders);
+	Page<T> getPage(Pageable pageable);
+	
+	
+	/**
+	 * 根据模板获得分页数据
+	 * @param page
+	 * @param template
+	 * @param orders
+	 * @return
+	 */
+	Page<T> getPageByTemplate(Pageable pageable, T template);
 
 	/**
 	 * 根据属性获得实体对象分页列表
@@ -162,7 +208,7 @@ public interface EntityDao<T> {
 	 * @param orders
 	 * @return
 	 */
-	Page1<T> getPageBy(Page1<T> page, String[] propNames, Object[] values, String... orders);
+	Page<T> getPageBy(Pageable pageable, String[] propNames, Object[] values);
 
 	/**
 	 * 获得所有实体对象数量

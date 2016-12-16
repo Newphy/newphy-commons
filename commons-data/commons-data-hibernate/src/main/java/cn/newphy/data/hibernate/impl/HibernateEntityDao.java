@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate3.SessionFactoryUtils;
 
 import cn.newphy.commons.lang.ReflectionUtils;
-import cn.newphy.data.Page;
+import cn.newphy.data.Page1;
 import cn.newphy.data.hibernate.EntityDao;
 import cn.newphy.data.hibernate.EntityRowMapper;
 import cn.newphy.data.hibernate.jdbc.JdbcHelper;
@@ -147,12 +147,12 @@ public class HibernateEntityDao<T> implements EntityDao<T> {
 	}
 
 	@Override
-	public Page<T> getPage(Page<T> page, String... orders) {
+	public Page1<T> getPage(Page1<T> page, String... orders) {
 		return hibernateHelper.getPage(entityClass, page, orders);
 	}
 
 	@Override
-	public Page<T> getPageBy(Page<T> page, String[] propNames, Object[] values,
+	public Page1<T> getPageBy(Page1<T> page, String[] propNames, Object[] values,
 			String... orders) {
 		return hibernateHelper.getPageBy(entityClass, page, propNames, values,
 				orders);

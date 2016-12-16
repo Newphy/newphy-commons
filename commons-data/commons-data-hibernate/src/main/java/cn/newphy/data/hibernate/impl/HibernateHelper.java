@@ -18,7 +18,7 @@ import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.orm.hibernate3.SessionFactoryUtils;
 
-import cn.newphy.data.Page;
+import cn.newphy.data.Page1;
 
 /**
  * Created by Administrator on 14-3-11.
@@ -238,7 +238,7 @@ public class HibernateHelper {
 	 *            鎺掑簭灞炴�锛屽锛氣�userName asc"
 	 * @return
 	 */
-	public <T> Page<T> getPage(Class<T> entityClass, Page<T> page, String... orders) {
+	public <T> Page1<T> getPage(Class<T> entityClass, Page1<T> page, String... orders) {
 		String hql = HibernateHQL.getQueryHQL(entityClass, null, orders);
 		return findPage(hql, page);
 	}
@@ -303,7 +303,7 @@ public class HibernateHelper {
 	 * @param orders
 	 * @return
 	 */
-	public <T> Page<T> getPageBy(Class<T> entityClass, Page<T> page, String[] propNames, Object[] values, String... orders) {
+	public <T> Page1<T> getPageBy(Class<T> entityClass, Page1<T> page, String[] propNames, Object[] values, String... orders) {
 		String hql = HibernateHQL.getQueryHQL(entityClass, propNames, orders);
 		return findPage(hql, page, values);
 	}
@@ -424,7 +424,7 @@ public class HibernateHelper {
 	 * @param values
 	 * @return
 	 */
-	public <T> Page<T> findPage(final CharSequence hql, final Page<T> page, final Object... values) {
+	public <T> Page1<T> findPage(final CharSequence hql, final Page1<T> page, final Object... values) {
 		String namedParamHql = HibernateHQL.getNamedParamHQL(hql);
 		String[] paramNames = HqlUtils.getNamedParamArray(values);
 		return findNPPage(namedParamHql, page, paramNames, values);
@@ -438,7 +438,7 @@ public class HibernateHelper {
 	 * @param paramMap
 	 * @return
 	 */
-	public <T> Page<T> findNPPage(final CharSequence hql, final Page<T> page, Map<String, Object> paramMap) {
+	public <T> Page1<T> findNPPage(final CharSequence hql, final Page1<T> page, Map<String, Object> paramMap) {
 		if (paramMap == null) {
 			paramMap = new HashMap<String, Object>();
 		}
@@ -462,10 +462,10 @@ public class HibernateHelper {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> Page<T> findNPPage(final CharSequence hql, final Page<T> page, final String[] paramNames, final Object[] values) {
-		return (Page<T>) getHibernateTemplate().executeWithNativeSession(new HibernateCallback<Page<T>>() {
+	public <T> Page1<T> findNPPage(final CharSequence hql, final Page1<T> page, final String[] paramNames, final Object[] values) {
+		return (Page1<T>) getHibernateTemplate().executeWithNativeSession(new HibernateCallback<Page1<T>>() {
 			@Override
-			public Page<T> doInHibernate(Session session) throws HibernateException {
+			public Page1<T> doInHibernate(Session session) throws HibernateException {
 				if (page.isNeedTotal()) {
 					// [1] total size
 					String countHql = "select count(1) " + HqlUtils.removeSelect(HqlUtils.removeOrders(hql));

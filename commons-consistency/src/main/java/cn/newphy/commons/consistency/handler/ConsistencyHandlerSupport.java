@@ -1,11 +1,7 @@
 package cn.newphy.commons.consistency.handler;
 
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Method;
-
 import javax.sql.DataSource;
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;

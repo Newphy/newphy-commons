@@ -1,8 +1,9 @@
 package cn.newphy.data.id.snowflake;
 
 import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.net.NetworkInterface;
 import java.nio.charset.Charset;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,17 +20,30 @@ import com.github.zkclient.exception.ZkBadVersionException;
 import com.github.zkclient.exception.ZkNodeExistsException;
 
 public class WorkerIdZookeeperRegistry implements WorkerIdRegistry {
-	private Logger logger = LoggerFactory.getLogger(WorkerIdZookeeperRegistry.class);
+	private static Logger logger = LoggerFactory.getLogger(WorkerIdZookeeperRegistry.class);
 
 	private static final String ROOT = "/SnowFlakeId";
 	private static final Charset UTF8 = Charset.forName("UTF-8");
 	private static String hostInfo;
 	static {
 		try {
-			InetAddress address = InetAddress.getLocalHost();
-			hostInfo = address.getHostName() + "[" + address.getHostAddress() + "]";
-		} catch (UnknownHostException e) {
-			hostInfo = "unknown host";
+			Enumeration<NetworkInterface> ifaces =NetworkInterface.getNetworkInterfaces();
+			LOOP_IFACE: for(; ifaces.hasMoreElements();) {
+				String ifaceInfo = "";
+				NetworkInterface iface = ifaces.nextElement();
+				for (Enumeration<InetAddress> addrs = iface.getInetAddresses(); addrs.hasMoreElements();) {
+					InetAddress addr = addrs.nextElement();
+					if("127.0.0.1".equals(addr.getHostAddress())) {
+						continue LOOP_IFACE;
+					}
+					ifaceInfo += addr.getHostName() + "(" + addr.getHostAddress() + "); ";
+				}
+				if(ifaceInfo.trim().length() > 0) {
+					hostInfo += iface.getName() + "[" + ifaceInfo + "]; ";
+				}
+			}
+		} catch (Exception e) {
+			logger.warn("get local ip address error", e);
 		}
 	}
 

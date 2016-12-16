@@ -10,7 +10,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
-import cn.newphy.data.Page;
+import cn.newphy.data.Page1;
 
 public class JdbcHelper {
 
@@ -133,7 +133,7 @@ public class JdbcHelper {
 	 * @param values
 	 * @return
 	 */
-	public <T> Page<T> queryForPage(CharSequence sql, Page<T> page, RowMapper<T> rowMapper, Object... values) {
+	public <T> Page1<T> queryForPage(CharSequence sql, Page1<T> page, RowMapper<T> rowMapper, Object... values) {
 		if (page.getPageNo() <= 0 || page.getPageSize() <= 0) {
 			return page;
 		}
@@ -169,7 +169,7 @@ public class JdbcHelper {
 	 * @param paramMap
 	 * @return
 	 */
-	public <T> Page<T> queryNPForPage(CharSequence sql, Page<T> page, RowMapper<T> rowMapper, Map<String, ?> paramMap) {
+	public <T> Page1<T> queryNPForPage(CharSequence sql, Page1<T> page, RowMapper<T> rowMapper, Map<String, ?> paramMap) {
 		if (page.getPageNo() <= 0 || page.getPageSize() <= 0) {
 			return page;
 		}

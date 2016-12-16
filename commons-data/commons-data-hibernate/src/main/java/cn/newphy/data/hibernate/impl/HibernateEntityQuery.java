@@ -8,7 +8,7 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 
-import cn.newphy.data.Page;
+import cn.newphy.data.Page1;
 import cn.newphy.data.hibernate.query.EntityQuery;
 import cn.newphy.data.hibernate.query.QueryExpression;
 import cn.newphy.data.hibernate.query.QueryLanguage;
@@ -138,7 +138,7 @@ public class HibernateEntityQuery<T> implements EntityQuery<T> {
 	}
 
 	@Override
-	public Page<T> page(Page<T> page) {
+	public Page1<T> page(Page1<T> page) {
 		return hibernateHelper.findPage(generateHql(), page, values.toArray());
 	}
 	

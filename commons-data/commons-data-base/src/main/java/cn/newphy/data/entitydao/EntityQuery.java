@@ -1,11 +1,12 @@
-package cn.newphy.data.hibernate.query;
+package cn.newphy.data.entitydao;
 
 import java.util.Collection;
 import java.util.List;
 
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 
-import cn.newphy.data.Page1;
+import cn.newphy.data.domain.Page;
+import cn.newphy.data.domain.Pageable;
 
 public interface EntityQuery<T> {
 
@@ -122,7 +123,7 @@ public interface EntityQuery<T> {
 	 * @param expression
 	 * @return
 	 */
-	EntityQuery<T> and(QueryExpression expression);
+	EntityQuery<T> and(ConditionExpression expression);
 
 	/**
 	 * or操作
@@ -130,7 +131,7 @@ public interface EntityQuery<T> {
 	 * @param expression
 	 * @return
 	 */
-	EntityQuery<T> or(QueryExpression exp1, QueryExpression exp2);
+	EntityQuery<T> or(ConditionExpression exp1, ConditionExpression exp2, ConditionExpression... expN);
 
 	/**
 	 * 正排序
@@ -161,7 +162,7 @@ public interface EntityQuery<T> {
 	 * @param page
 	 * @return
 	 */
-	Page1<T> page(Page1<T> page);
+	Page<T> page(Pageable pageable);
 
 	/**
 	 * 获得唯一一个对象
@@ -181,7 +182,7 @@ public interface EntityQuery<T> {
 	 * 
 	 * @return
 	 */
-	T any();
+	T one();
 	
 	/**
 	 * 获得数量
