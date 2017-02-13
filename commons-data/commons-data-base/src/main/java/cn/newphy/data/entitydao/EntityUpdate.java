@@ -1,5 +1,6 @@
 package cn.newphy.data.entitydao;
 
+import java.io.Serializable;
 import java.util.Collection;
 
 import cn.newphy.data.exception.OptimisticLockException;
@@ -156,10 +157,11 @@ public interface EntityUpdate<T> {
 	
 	/**
 	 * 乐观锁更新
-	 * @param versionProperty
+	 * @param id
+	 * @param currentVersion
 	 * @return
 	 * @throws OptimisticLockException
 	 */
-	int updateOptimistic() throws OptimisticLockException;
+	int updateOptimistic(Serializable id, int currentVersion) throws OptimisticLockException;
 
 }

@@ -115,4 +115,7 @@ public class SnowFlakeId {
 	protected long timeGen() {
 		return System.currentTimeMillis();
 	}
+	
+	
+
 }

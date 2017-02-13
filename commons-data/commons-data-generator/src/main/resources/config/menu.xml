@@ -1,0 +1,8 @@
+<menuList>
+	<menu name="数据源设置" code="DS_HOME" url="/ds/dsHome" icon="icon-cog" />
+	<menu name="参数设置" code="ARG_HOME" url="/arg/argHome" icon="icon-tags" />	
+	<menu name="DAO生成" code="DAO_GEN"  icon="icon-tint" >
+			<menu name="Mybatis文件生成" code="MYBATIS_HOME" url="/dao/mybatisHome" />
+			<menu name="Hibernate文件生成" code="HIBERNATE_HOME" url="/dao/hibernateHome" />
+	</menu>
+</menuList>

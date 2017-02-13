@@ -23,6 +23,15 @@ public abstract class MybatisSqlBuilder implements SqlBuilder {
 	public final static String BRACKET_R = ") ";
 
 	private final DialectType dialectType;
+	
+	public static MybatisSqlBuilder getMybatisSqlBuilder(DialectType dialectType) {
+		switch (dialectType) {
+		case MYSQL:
+			return new MysqlSqlBuilder();
+		default:
+			throw new UnsupportedOperationException("不支持的数据库类型");
+		}
+	}
 
 	public MybatisSqlBuilder(DialectType dialectType) {
 		this.dialectType = dialectType;
@@ -88,8 +97,7 @@ public abstract class MybatisSqlBuilder implements SqlBuilder {
 				if(i == 0) {
 					sql.append(ORDER_BY);
 				}
-				sql.append(orders.get(i).getColumn())
-						.append(orders.get(i).getDirection());
+				sql.append(orders.get(i).getColumn()).append(" ").append(orders.get(i).getDirection());
 				if (i != orders.size() - 1) {
 					sql.append(COMMA);
 				}

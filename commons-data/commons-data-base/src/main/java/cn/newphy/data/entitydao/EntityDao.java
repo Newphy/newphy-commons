@@ -16,12 +16,14 @@ public interface EntityDao<T> {
 
 	/**
 	 * 构建查询器
+	 * 
 	 * @return
 	 */
 	EntityQuery<T> createQuery();
-	
+
 	/**
 	 * 构建更新器
+	 * 
 	 * @return
 	 */
 	EntityUpdate<T> createUpdate();
@@ -53,9 +55,10 @@ public interface EntityDao<T> {
 	 * @param entity
 	 */
 	int update(T entity);
-	
+
 	/**
 	 * 乐观更新
+	 * 
 	 * @param entity
 	 * @param versionProperty
 	 * @return
@@ -124,22 +127,6 @@ public interface EntityDao<T> {
 	 * @return
 	 */
 	List<T> getAll(Order... orders);
-	
-	
-	/**
-	 * 根据模板获得列表
-	 * @param template
-	 * @param orders
-	 * @return
-	 */
-	List<T> getByTemplate(T template, Order...orders);
-	
-	/**
-	 * 获得任意一个
-	 * @param template
-	 * @return
-	 */
-	T getOneByTemplate(T template);
 
 	/**
 	 * 根据属性获得实体对象列表
@@ -160,8 +147,16 @@ public interface EntityDao<T> {
 	 * @return
 	 */
 	List<T> getBy(String[] propNames, Object[] values, Order... orders);
-	
-	
+
+	/**
+	 * 根据模板获得列表
+	 * 
+	 * @param template
+	 * @param orders
+	 * @return
+	 */
+	List<T> getByTemplate(T template, Order... orders);
+
 	/**
 	 * 根据属性获得实体对象
 	 * 
@@ -178,7 +173,15 @@ public interface EntityDao<T> {
 	 * @param values
 	 * @return
 	 */
-	T getOneBy(String[] propNames, Object[] values);		
+	T getOneBy(String[] propNames, Object[] values);
+
+	/**
+	 * 获得任意一个
+	 * 
+	 * @param template
+	 * @return
+	 */
+	T getOneByTemplate(T template);
 
 	/**
 	 * 获得实体的分页列表
@@ -188,10 +191,10 @@ public interface EntityDao<T> {
 	 * @return
 	 */
 	Page<T> getPage(Pageable pageable);
-	
-	
+
 	/**
 	 * 根据模板获得分页数据
+	 * 
 	 * @param page
 	 * @param template
 	 * @param orders
@@ -218,6 +221,15 @@ public interface EntityDao<T> {
 	int count();
 
 	/**
+	 * 根据属性获得记录数量
+	 * 
+	 * @param propName
+	 * @param value
+	 * @return
+	 */
+	int count(String propName, Object value);
+
+	/**
 	 * 根据属性获得实体对象数量
 	 * 
 	 * @param propNames
@@ -225,7 +237,15 @@ public interface EntityDao<T> {
 	 * @return
 	 */
 	int count(String[] propNames, Object[] values);
-	
+
+	/**
+	 * 根据模板获得记录数量
+	 * 
+	 * @param template
+	 * @return
+	 */
+	int countByTemplate(T template);
+
 	/**
 	 * flush
 	 */

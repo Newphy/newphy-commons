@@ -17,7 +17,7 @@ public class TotalPage<T> extends ArrayList<T> implements Page<T> {
 	public TotalPage(List<T> content, Pageable pageable, long total) {
 		Assert.notNull(pageable, "分页信息不能为空");
 		if(content != null && pageable != null) {
-			addAll(content.subList(0, pageable.getPageSize()));
+			addAll(content.subList(0, Math.min(content.size(), pageable.getPageSize())));
 		}
 		this.pageable = pageable;
 		this.total = total;

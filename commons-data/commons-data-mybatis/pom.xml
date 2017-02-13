@@ -74,10 +74,6 @@
 			<groupId>org.mybatis</groupId>
 			<artifactId>mybatis-spring</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>com.github.miemiedev</groupId>
-			<artifactId>mybatis-paginator</artifactId>
-		</dependency>
 
 		<dependency>
 			<groupId>org.hibernate</groupId>
@@ -90,24 +86,17 @@
 			<version>2.3.22</version>
 		</dependency>
 		
-				<dependency>
+		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>druid</artifactId>
 		</dependency>
 		
-		<dependency>
-    <groupId>org.springframework.data</groupId>
-    <artifactId>spring-data-jpa</artifactId>
-    <version>2.0.0.M1</version>
-</dependency>
-
         <dependency>
             <groupId>com.github.jsqlparser</groupId>
             <artifactId>jsqlparser</artifactId>
             <version>0.9.5</version>
         </dependency>
 		
-
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

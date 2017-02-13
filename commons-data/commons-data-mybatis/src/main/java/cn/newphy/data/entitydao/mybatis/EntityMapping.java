@@ -1,11 +1,16 @@
 package cn.newphy.data.entitydao.mybatis;
 
 import java.io.ByteArrayInputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Table;
+import javax.persistence.Version;
 
 import org.apache.ibatis.builder.xml.XMLMapperBuilder;
 import org.apache.ibatis.mapping.ResultMap;
@@ -13,16 +18,17 @@ import org.apache.ibatis.mapping.ResultMapping;
 import org.apache.ibatis.session.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.ReflectionUtils;
 
-import cn.newphy.data.entitydao.mybatis.util.CamelCaseUtils;
 import cn.newphy.data.entitydao.mybatis.util.FreemarkUtils;
+import cn.newphy.data.entitydao.mybatis.util.ReflectionUtils;
 
 public class EntityMapping {
 	private Logger logger = LoggerFactory.getLogger(EntityMapping.class);
 	
 	// Mybatis配置类
 	private final Configuration configuration;
+	// 全部配置
+	private final GlobalConfig globalConfig;
 	// 源ResultMap
 	private final ResultMap sourceResultMap;
 	// 表名
@@ -33,23 +39,31 @@ public class EntityMapping {
 	private Map<String, ResultMapping> columnMap = new HashMap<>();
 	// 属性名map
 	private Map<String, ResultMapping> propertyMap = new HashMap<>();
+	// 更新字段
+	private List<ResultMapping> updateMappings = new ArrayList<>();
+	// 插入字段
+	private List<ResultMapping> insertMappings = new ArrayList<>();
+	
+	private ResultMapping versionMapping = null;
+	// 主键生成器
+	private IdGenerator idGenerator;
 
 
-	public EntityMapping(Configuration configuration, ResultMap resultMap) {
+	public EntityMapping(Configuration configuration, GlobalConfig globalConfig, ResultMap resultMap) {
 		this.configuration = configuration;
+		this.globalConfig = globalConfig;
 		this.sourceResultMap = resultMap;
 		initialize();
 	}
 	
 	private void initialize() {
-		Class<?> entityClass = sourceResultMap.getType();
-		this.tableName = getTableNameByType(entityClass);
+		initTableName();
 		// 注册新的ResultMap
 		registerEntityDaoResultMap();
-		for (ResultMapping resultMapping : resultMap.getResultMappings()) {
-			columnMap.put(resultMapping.getColumn(), resultMapping);
-			propertyMap.put(resultMapping.getProperty(), resultMapping);
-		}
+		// 初始化ResultMappings
+		initResultMappings();
+		// 初始化Id生成器
+		initIdGenerator();
 		// build mapper文件
 		buildXmlMapper();
 	}
@@ -69,12 +83,57 @@ public class EntityMapping {
 		configuration.addResultMap(resultMap);
 	}
 	
+	
+	private void initResultMappings() {
+		Class<?> entityClass = sourceResultMap.getType();
+		for (ResultMapping resultMapping : resultMap.getResultMappings()) {
+			columnMap.put(resultMapping.getColumn(), resultMapping);
+			propertyMap.put(resultMapping.getProperty(), resultMapping);
+			Column column = ReflectionUtils.getAnnotationFromProperty(entityClass, resultMapping.getProperty(), Column.class);
+			if(column == null || column.insertable()) {
+				insertMappings.add(resultMapping);
+			}
+			if(column == null || column.updatable()) {
+				updateMappings.add(resultMapping);
+			}
+			Version version = ReflectionUtils.getAnnotationFromProperty(entityClass, resultMapping.getProperty(), Version.class);
+			if(version != null) {
+				versionMapping = resultMapping;
+			}
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void initIdGenerator() {
+		Class<?> entityClass = sourceResultMap.getType();
+		ResultMapping idMapping = getIdMapping();
+		String idName = idMapping.getProperty();
+		GeneratedValue generatedValue = ReflectionUtils.getAnnotationFromProperty(entityClass, idName, GeneratedValue.class);
+		if(generatedValue == null) {
+			return;
+		}
+		if(generatedValue.strategy() == GenerationType.AUTO) {
+			String generator = generatedValue.generator();
+			if(generator != null && generator.length() > 0) {
+				try {
+					Class<? extends IdGenerator> generatorClass = (Class<? extends IdGenerator>)Class.forName(generator);
+					this.idGenerator = generatorClass.newInstance();
+				} catch (ClassNotFoundException e) {
+					logger.warn("找不到Id生成器类[" + generator + "]");
+				} catch (Exception e) {
+					logger.warn("无法初始化生成器[" + generator + "]", e);
+				}
+			}
+		}
+	}
+	
 
 	/**
 	 * build ResultMap相关的Mapper操作
 	 */
 	private void buildXmlMapper() {
 		String xml = FreemarkUtils.parse("template_mysql", this);
+		System.out.println(xml);
 		String resource = "/entitydao/mapping/" + sourceResultMap.getId() + "Mapping.xml";
 		XMLMapperBuilder xmlMapperBuilder = new XMLMapperBuilder(new ByteArrayInputStream(xml.getBytes()),
 				configuration, resource, configuration.getSqlFragments());
@@ -97,10 +156,29 @@ public class EntityMapping {
 	public List<ResultMapping> getResultMappings() {
 		return resultMap.getResultMappings();
 	}
+
 	
-	
-	
-	
+	/**
+	 * @return the updateMappings
+	 */
+	public List<ResultMapping> getUpdateMappings() {
+		return updateMappings;
+	}
+
+	/**
+	 * @return the insertMappings
+	 */
+	public List<ResultMapping> getInsertMappings() {
+		return insertMappings;
+	}
+
+	/**
+	 * @return the versionMapping
+	 */
+	public ResultMapping getVersionMapping() {
+		return versionMapping;
+	}
+
 	/**
 	 * 根据字段名获得ResultMapping
 	 * @param column
@@ -128,6 +206,15 @@ public class EntityMapping {
 	public ResultMapping getIdMapping() {
 		List<ResultMapping> idMappings = resultMap.getIdResultMappings();
 		return idMappings.get(0);
+	}
+	
+	
+
+	/**
+	 * @return the idGenerator
+	 */
+	public IdGenerator getIdGenerator() {
+		return idGenerator;
 	}
 
 	/**
@@ -158,33 +245,17 @@ public class EntityMapping {
 	}
 	
 
-	@SuppressWarnings("unchecked")
-	private String getTableNameByType(Class<?> entityClass) {
-		String tableName = null;
+	private void initTableName() {
+		Class<?> entityClass = sourceResultMap.getType();
 		if (entityClass.isAnnotationPresent(Table.class)) {
 			Table table = entityClass.getAnnotation(Table.class);
-			tableName = table.name();
-			return tableName;
+			this.tableName = table.name();
 		}
-
-		Class<? extends Annotation> tableClass;
-		try {
-			tableClass = (Class<? extends Annotation>) Class.forName("javax.persistence.Table");
-			if (entityClass.isAnnotationPresent(tableClass)) {
-				Object tableAnnotation = entityClass.getAnnotation(tableClass);
-				Method method = tableClass.getMethod("name");
-				tableName = (String) ReflectionUtils.invokeMethod(method, tableAnnotation);
-				return tableName;
-			}
-		} catch (Exception e) {
+		else {
+			this.tableName = globalConfig.getTableNameStrategy().getTableName(globalConfig, entityClass);
 		}
-
-		if (tableName == null) {
-			String className = entityClass.getSimpleName();
-			tableName = CamelCaseUtils.camelCase2Underline(className);
-		}
-		return tableName;
 	}
+
 
 	/**
 	 * @return the tableName

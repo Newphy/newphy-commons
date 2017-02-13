@@ -14,7 +14,7 @@ import cn.newphy.data.entitydao.mybatis.plugins.paginator.PagePlugin;
 public class MybatisEntityDaoFactory extends EntityDaoFactory implements InitializingBean {
 
 	private SqlSessionFactory sqlSessionFactory;
-	private EConfiguration configuration;
+	private GlobalConfig configuration;
 	private Map<String, MybatisEntityDao<?>> entityDaoMap = new HashMap<>();
 
 	@SuppressWarnings("unchecked")
@@ -62,7 +62,7 @@ public class MybatisEntityDaoFactory extends EntityDaoFactory implements Initial
 	/**
 	 * @return the configuration
 	 */
-	public EConfiguration getConfiguration() {
+	public GlobalConfig getConfiguration() {
 		return configuration;
 	}
 
@@ -70,7 +70,7 @@ public class MybatisEntityDaoFactory extends EntityDaoFactory implements Initial
 	 * @param configuration
 	 *            the configuration to set
 	 */
-	public void setConfiguration(EConfiguration configuration) {
+	public void setConfiguration(GlobalConfig configuration) {
 		this.configuration = configuration;
 	}
 

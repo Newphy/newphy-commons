@@ -7,7 +7,7 @@ public interface ConditionExpression {
 	 * 
 	 * @return
 	 */
-	CharSequence toSql(SqlBuilder dialect);
+	CharSequence toSql(SqlBuilder sqlBuilder);
 	
 	/**
 	 * 获得属性名称

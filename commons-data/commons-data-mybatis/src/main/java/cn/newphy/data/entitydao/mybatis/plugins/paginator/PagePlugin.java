@@ -16,7 +16,8 @@ import org.apache.ibatis.session.RowBounds;
 import cn.newphy.data.domain.Page;
 import cn.newphy.data.domain.PageMode;
 import cn.newphy.data.domain.Pageable;
-import cn.newphy.data.entitydao.mybatis.EConfiguration;
+import cn.newphy.data.entitydao.mybatis.GlobalConfig;
+import cn.newphy.data.entitydao.mybatis.ParamConst;
 
 @Intercepts({@Signature(
 		type= Executor.class,
@@ -24,9 +25,9 @@ import cn.newphy.data.entitydao.mybatis.EConfiguration;
 		args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class})})
 public class PagePlugin implements Interceptor {
 	
-    private final EConfiguration configuration;
+    private final GlobalConfig configuration;
 
-	public PagePlugin(EConfiguration configuration) {
+	public PagePlugin(GlobalConfig configuration) {
 		this.configuration = configuration;
 	}
 
@@ -35,7 +36,7 @@ public class PagePlugin implements Interceptor {
         Object[] args = invocation.getArgs();
 
         // 采用rowBounds进行分页, 不进行分页拦截
-        RowBounds rowBounds = (RowBounds)args[PageConst.IDX_ROWBOUNDS];
+        RowBounds rowBounds = (RowBounds)args[ParamConst.IDX_ROWBOUNDS];
         if(rowBounds != null && rowBounds != RowBounds.DEFAULT) {
         	return invocation.proceed();
         }
@@ -47,7 +48,7 @@ public class PagePlugin implements Interceptor {
         }
         
         // 没有分页参数，不进行分页拦截        
-        final Object parameterObject = args[PageConst.IDX_PARAMETER_OBJECT];
+        final Object parameterObject = args[ParamConst.IDX_PARAMETER_OBJECT];
         Pageable pageable = getPageable(parameterObject);
         if(pageable == null) {
         	return invocation.proceed();        	

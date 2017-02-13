@@ -17,7 +17,7 @@ public class InConditionExpression extends MybatisConditionExpression {
 
 
 	@Override
-	public CharSequence toSql(SqlBuilder dialect) {
+	public CharSequence toSql(SqlBuilder sqlBuilder) {
 		if(values.length > 0) {
 			StringBuffer fragment = new StringBuffer();
 			fragment.append(columnMapping.getColumn()).append(" IN (");

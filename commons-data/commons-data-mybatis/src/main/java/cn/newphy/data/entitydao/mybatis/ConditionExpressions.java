@@ -9,6 +9,7 @@ import cn.newphy.data.entitydao.mybatis.expression.BetweenConditionExpression;
 import cn.newphy.data.entitydao.mybatis.expression.InConditionExpression;
 import cn.newphy.data.entitydao.mybatis.expression.OperatorConditionExpression;
 import cn.newphy.data.entitydao.mybatis.expression.OrConditionExpression;
+import cn.newphy.data.entitydao.mybatis.expression.RawSqlExpression;
 import cn.newphy.data.entitydao.mybatis.expression.SimpleConditionExpression;
 
 public abstract class ConditionExpressions {
@@ -163,6 +164,15 @@ public abstract class ConditionExpressions {
 			exps[i+2] = expN[i];
 		}
 		return new OrConditionExpression(exps);
+	}
+	
+	/**
+	 * 原始sql
+	 * @param sql
+	 * @return
+	 */
+	public static ConditionExpression raw(String sql) {
+		return new RawSqlExpression(sql);
 	}
 
 

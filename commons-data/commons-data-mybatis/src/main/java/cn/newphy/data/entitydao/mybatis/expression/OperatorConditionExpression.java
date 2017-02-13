@@ -16,7 +16,7 @@ public class OperatorConditionExpression extends MybatisConditionExpression {
 	}
 
 	@Override
-	public CharSequence toSql(SqlBuilder dialect) {
+	public CharSequence toSql(SqlBuilder sqlBuilder) {
 		StringBuffer fragment = new StringBuffer();
 		fragment.append(columnMapping.getColumn()).append(" ")
 			.append(op).append(" ")

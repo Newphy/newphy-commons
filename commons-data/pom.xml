@@ -12,5 +12,6 @@
 		<module>commons-data-base</module>
 		<module>commons-data-hibernate</module>
 		<module>commons-data-mybatis</module>
-	</modules>
+    <module>commons-data-generator</module>
+  </modules>
 </project>

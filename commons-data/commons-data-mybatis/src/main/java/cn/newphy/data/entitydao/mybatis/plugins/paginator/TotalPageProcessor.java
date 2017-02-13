@@ -11,11 +11,11 @@ import org.apache.ibatis.plugin.Invocation;
 import cn.newphy.data.domain.Page;
 import cn.newphy.data.domain.Pageable;
 import cn.newphy.data.domain.TotalPage;
-import cn.newphy.data.entitydao.mybatis.EConfiguration;
+import cn.newphy.data.entitydao.mybatis.GlobalConfig;
 
 public class TotalPageProcessor extends PageProcessor {
 
-	public TotalPageProcessor(Invocation invocation, Pageable pageable, EConfiguration configuration) {
+	public TotalPageProcessor(Invocation invocation, Pageable pageable, GlobalConfig configuration) {
 		super(invocation, pageable, configuration);
 	}
 

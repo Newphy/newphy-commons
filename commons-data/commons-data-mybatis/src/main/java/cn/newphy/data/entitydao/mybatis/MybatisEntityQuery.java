@@ -17,7 +17,6 @@ import cn.newphy.data.domain.Pageable;
 import cn.newphy.data.entitydao.ConditionExpression;
 import cn.newphy.data.entitydao.EntityQuery;
 import cn.newphy.data.entitydao.mybatis.builder.MybatisSqlBuilder;
-import cn.newphy.data.entitydao.mybatis.plugins.paginator.PageConst;
 
 public class MybatisEntityQuery<T> implements EntityQuery<T> {
 
@@ -25,10 +24,10 @@ public class MybatisEntityQuery<T> implements EntityQuery<T> {
 	private List<Order> orders = new ArrayList<Order>();
 	
 	private final MybatisEntityDao<T> entityDao;
-	private final EConfiguration configuration;
+	private final GlobalConfig configuration;
 	
 
-	MybatisEntityQuery(EConfiguration configuration, MybatisEntityDao<T> entityDao) {
+	MybatisEntityQuery(GlobalConfig configuration, MybatisEntityDao<T> entityDao) {
 		this.configuration = configuration;
 		this.entityDao = entityDao;
 	}
@@ -141,7 +140,7 @@ public class MybatisEntityQuery<T> implements EntityQuery<T> {
 		Assert.notNull(pageable, "分页参数不能为空");
 		// 初始化排序
 		Map<String, Object> paramMap = getParamMap();
-		paramMap.put(PageConst.PARAM_NAME_PAGE, pageable);
+		paramMap.put(ParamConst.PARAM_NAME_PAGE, pageable);
 		return (Page<T>)entityDao.selectList(toSql(), paramMap);
 	}
 
@@ -184,7 +183,7 @@ public class MybatisEntityQuery<T> implements EntityQuery<T> {
 	
 	
 	private String toSql() {
-		MybatisSqlBuilder sqlBuilder = configuration.getDialect();
+		MybatisSqlBuilder sqlBuilder = MybatisSqlBuilder.getMybatisSqlBuilder(configuration.getDialectType());
 		String tableName = entityDao.getEntityMapping().getTableName();
 		List<String> selectColumns = getSelectColumns();
 		StringBuffer sql = new StringBuffer();
@@ -204,7 +203,7 @@ public class MybatisEntityQuery<T> implements EntityQuery<T> {
 	}
 	
 	private String toOneSql() {
-		MybatisSqlBuilder dialect = configuration.getDialect();
+		MybatisSqlBuilder dialect = MybatisSqlBuilder.getMybatisSqlBuilder(configuration.getDialectType());
 		String sql = toSql();
 		if(dialect.supportsLimit()) {
 			sql += dialect.getLimitString(0, 1);
@@ -214,7 +213,7 @@ public class MybatisEntityQuery<T> implements EntityQuery<T> {
 	
 	
 	private String toCountSql() {
-		MybatisSqlBuilder dialect = configuration.getDialect();
+		MybatisSqlBuilder dialect = MybatisSqlBuilder.getMybatisSqlBuilder(configuration.getDialectType());
 		String tableName = entityDao.getEntityMapping().getTableName();
 		StringBuilder countSql = new StringBuilder();
 		// select count

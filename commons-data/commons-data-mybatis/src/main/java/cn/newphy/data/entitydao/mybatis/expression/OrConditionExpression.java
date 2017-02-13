@@ -20,11 +20,11 @@ public class OrConditionExpression extends MybatisConditionExpression {
 
 
 	@Override
-	public CharSequence toSql(SqlBuilder dialect) {
-		MybatisSqlBuilder mybatisDialect = (MybatisSqlBuilder)dialect;
+	public CharSequence toSql(SqlBuilder sqlBuilder) {
+		MybatisSqlBuilder mybatisDialect = (MybatisSqlBuilder)sqlBuilder;
 		List<CharSequence> fragments = new ArrayList<CharSequence>();
 		for (ConditionExpression expression : queryExpressions) {
-			fragments.add(expression.toSql(dialect));
+			fragments.add(expression.toSql(sqlBuilder));
 		}
 		return mybatisDialect.getOrString(fragments);
 	}

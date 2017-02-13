@@ -44,7 +44,7 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.util.StringUtils;
 
 import cn.newphy.data.entitydao.EntityDaoAnnotationProcessor;
-import cn.newphy.data.entitydao.mybatis.EConfiguration;
+import cn.newphy.data.entitydao.mybatis.GlobalConfig;
 import cn.newphy.data.entitydao.mybatis.MybatisEntityDaoFactory;
 
 /**
@@ -336,7 +336,7 @@ public class MapperScannerConfigurer
 		
 		// register EConfiguration
 		GenericBeanDefinition configurationDefinition = new GenericBeanDefinition();
-		configurationDefinition.setBeanClass(EConfiguration.class);
+		configurationDefinition.setBeanClass(GlobalConfig.class);
 		configurationDefinition.getPropertyValues().add("sqlSessionFactory",
 				StringUtils.hasText(this.sqlSessionFactoryBeanName)
 						? new RuntimeBeanReference(this.sqlSessionFactoryBeanName) : this.sqlSessionFactory);

@@ -12,11 +12,11 @@ import cn.newphy.data.domain.Page;
 import cn.newphy.data.domain.PageByPage;
 import cn.newphy.data.domain.PageRequest;
 import cn.newphy.data.domain.Pageable;
-import cn.newphy.data.entitydao.mybatis.EConfiguration;
+import cn.newphy.data.entitydao.mybatis.GlobalConfig;
 
 public class PageByPageProcessor extends PageProcessor {
 
-	public PageByPageProcessor(Invocation invocation, Pageable pageable, EConfiguration configuration) {
+	public PageByPageProcessor(Invocation invocation, Pageable pageable, GlobalConfig configuration) {
 		super(invocation, pageable, configuration);
 	}
 
@@ -34,8 +34,14 @@ public class PageByPageProcessor extends PageProcessor {
 		return page;
 	}
 	
-	private Pageable getPageablePlus(Pageable pageable) {
-		PageRequest pageablePlus = new PageRequest(pageable.getPageNumber(), pageable.getPageSize()+1, pageable.getSort(), pageable.getPageMode());
+	private Pageable getPageablePlus(final Pageable pageable) {
+		@SuppressWarnings("serial")
+		PageRequest pageablePlus = new PageRequest(pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort(), pageable.getPageMode()){
+			@Override
+			public int getPageSize() {
+				return pageable.getPageSize() + 1;
+			}
+		};
 		return pageablePlus;
 	}
 }

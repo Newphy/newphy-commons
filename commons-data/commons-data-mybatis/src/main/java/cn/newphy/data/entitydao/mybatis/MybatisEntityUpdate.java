@@ -1,5 +1,6 @@
 package cn.newphy.data.entitydao.mybatis;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -15,6 +16,7 @@ import cn.newphy.data.entitydao.EntityUpdate;
 import cn.newphy.data.entitydao.UpdateExpression;
 import cn.newphy.data.entitydao.mybatis.builder.MybatisSqlBuilder;
 import cn.newphy.data.entitydao.mybatis.expression.MybatisUpdateExpression;
+import cn.newphy.data.entitydao.mybatis.expression.RawSqlUpdateExpression;
 import cn.newphy.data.exception.OptimisticLockException;
 
 public class MybatisEntityUpdate<T> implements EntityUpdate<T> {
@@ -23,9 +25,9 @@ public class MybatisEntityUpdate<T> implements EntityUpdate<T> {
 	private List<ConditionExpression> where = new ArrayList<ConditionExpression>();
 
 	private final MybatisEntityDao<T> entityDao;
-	private final EConfiguration configuration;
+	private final GlobalConfig configuration;
 
-	MybatisEntityUpdate(EConfiguration configuration, MybatisEntityDao<T> entityDao) {
+	MybatisEntityUpdate(GlobalConfig configuration, MybatisEntityDao<T> entityDao) {
 		this.configuration = configuration;
 		this.entityDao = entityDao;
 	}
@@ -131,10 +133,25 @@ public class MybatisEntityUpdate<T> implements EntityUpdate<T> {
 		return entityDao.update(toSql(), getParamMap());
 	}
 	
-
 	@Override
-	public int updateOptimistic() throws OptimisticLockException {
-		return 0;
+	public int updateOptimistic(Serializable id, int currentVersion) throws OptimisticLockException {
+		EntityMapping entityMapping = entityDao.getEntityMapping();
+		ResultMapping versionMapping = entityMapping.getVersionMapping();
+		if(versionMapping == null) {
+			throw new IllegalStateException("没有设置版本字段");
+		}
+		ResultMapping idMapping = entityMapping.getIdMapping();
+		// 增加set
+		String versionSql = versionMapping.getColumn() + " = " + versionMapping.getColumn() + " + 1";
+		update.put(versionMapping.getProperty(), new RawSqlUpdateExpression(versionSql));
+		// 增加id条件
+		and(ConditionExpressions.eq(entityMapping, idMapping.getProperty(), id));
+		and(ConditionExpressions.eq(entityMapping, versionMapping.getProperty(), currentVersion));
+		int c = update();
+		if(c == 0) {
+			throw new OptimisticLockException();
+		}
+		return c;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -165,7 +182,7 @@ public class MybatisEntityUpdate<T> implements EntityUpdate<T> {
 	}
 
 	private String toSql() {
-		MybatisSqlBuilder dialect = configuration.getDialect();
+		MybatisSqlBuilder dialect = MybatisSqlBuilder.getMybatisSqlBuilder(configuration.getDialectType());;
 		String tableName = entityDao.getEntityMapping().getTableName();
 		List<CharSequence> updateFragments = new ArrayList<CharSequence>();
 		for(String propertyName : update.keySet()) {

@@ -17,10 +17,13 @@ import org.apache.ibatis.plugin.Invocation;
 import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.session.Configuration;
 
+import cn.newphy.data.domain.Order;
 import cn.newphy.data.domain.Page;
 import cn.newphy.data.domain.Pageable;
+import cn.newphy.data.domain.Sort;
 import cn.newphy.data.entitydao.mybatis.ConfigurationHelper;
-import cn.newphy.data.entitydao.mybatis.EConfiguration;
+import cn.newphy.data.entitydao.mybatis.GlobalConfig;
+import cn.newphy.data.entitydao.mybatis.ParamConst;
 
 public abstract class PageProcessor {
 
@@ -29,22 +32,24 @@ public abstract class PageProcessor {
 
 	protected final Invocation invocation;
 	protected final Pageable pageable;
-	protected final EConfiguration globalConfig;
+	protected final GlobalConfig globalConfig;
+	protected final MappedStatement stmt;
 
-	public PageProcessor(Invocation invocation, Pageable pageable, EConfiguration globalConfig) {
+	public PageProcessor(Invocation invocation, Pageable pageable, GlobalConfig globalConfig) {
 		this.invocation = invocation;
 		this.pageable = pageable;
 		this.globalConfig = globalConfig;
+		this.stmt = (MappedStatement)invocation.getArgs()[ParamConst.IDX_MAPPED_STATEMENT];
 	}
 
 	public abstract Page<?> process() throws InvocationTargetException, IllegalAccessException;
 
 	protected MappedStatement getMappedStatement() {
-		return (MappedStatement) invocation.getArgs()[PageConst.IDX_MAPPED_STATEMENT];
+		return stmt;
 	}
 
 	protected Object getParameterObject() {
-		return invocation.getArgs()[PageConst.IDX_PARAMETER_OBJECT];
+		return invocation.getArgs()[ParamConst.IDX_PARAMETER_OBJECT];
 	}
 
 	protected List<ResultMap> getCountResultMaps(MappedStatement stmt) {
@@ -79,7 +84,13 @@ public abstract class PageProcessor {
 			}
 		}
 		// 增加分页对象
-		paramMap.put(PageConst.PARAM_NAME_PAGE, pageable);
+		paramMap.put(ParamConst.PARAM_NAME_PAGE, pageable);
+		// 增加排序
+		if(pageable.getSort() != null) {
+			Sort sort = pageable.getSort();
+			List<Order> orders = sort.getOrders();
+			paramMap.put(ParamConst.PARAM_NAME_ORDERS, orders.toArray(new Order[0]));
+		}
 		return paramMap;
 	}
 
@@ -95,8 +106,8 @@ public abstract class PageProcessor {
 		MappedStatement.Builder countStmtBuilder = ConfigurationHelper.createMappedStatementBuilder(stmt,
 				stmt.getId() + "_Count", countSqlSource);
 		countStmtBuilder.resultMaps(getCountResultMaps(stmt));
-		invocation.getArgs()[PageConst.IDX_MAPPED_STATEMENT] = countStmtBuilder.build();
-		invocation.getArgs()[PageConst.IDX_PARAMETER_OBJECT] = parameterObject;
+		invocation.getArgs()[ParamConst.IDX_MAPPED_STATEMENT] = countStmtBuilder.build();
+		invocation.getArgs()[ParamConst.IDX_PARAMETER_OBJECT] = parameterObject;
 		Object result = invocation.proceed();
 		long total = ((List<Long>) result).get(0);
 		return total;
@@ -113,8 +124,9 @@ public abstract class PageProcessor {
 		StaticSqlSource pageSqlSource = new StaticSqlSource(stmt.getConfiguration(), pageSql, parameterMappings);
 		MappedStatement.Builder pageStmtBuilder = ConfigurationHelper.createMappedStatementBuilder(stmt,
 				stmt.getId() + "_Page", pageSqlSource);
-		invocation.getArgs()[PageConst.IDX_MAPPED_STATEMENT] = pageStmtBuilder.build();
-		invocation.getArgs()[PageConst.IDX_PARAMETER_OBJECT] = parameterObject;
+		MappedStatement pageStmt = pageStmtBuilder.build();
+		invocation.getArgs()[ParamConst.IDX_MAPPED_STATEMENT] = pageStmt;
+		invocation.getArgs()[ParamConst.IDX_PARAMETER_OBJECT] = parameterObject;
 		Object result = invocation.proceed();
 		List<?> content = (List<?>) result;
 		return content;
@@ -126,11 +138,11 @@ public abstract class PageProcessor {
 		parameterMappings.addAll(boundSql.getParameterMappings());
 		// 增加分页参数的parameterMapping
 		ParameterMapping offsetParameterMapping = new ParameterMapping.Builder(configuration,
-				PageConst.PLACEHOLDER_OFFSET, Integer.class).build();
+				ParamConst.PLACEHOLDER_OFFSET, Integer.class).build();
 		parameterMappings.add(offsetParameterMapping);
 
 		ParameterMapping limitParameterMapping = new ParameterMapping.Builder(configuration,
-				PageConst.PLACEHOLDER_LIMIT, Integer.class).build();
+				ParamConst.PLACEHOLDER_LIMIT, Integer.class).build();
 		parameterMappings.add(limitParameterMapping);
 		return parameterMappings;
 	}
